@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 public class FilmController {
     private final Logger log = LoggerFactory.getLogger(FilmController.class);
     private final Map<Long, Film> films = new HashMap<>();
-    private final static LocalDate FIRST_FILM_DATE = LocalDate.of(1895, 12, 28);
+    private final LocalDate FIRST_FILM_DATE = LocalDate.of(1895, 12, 28);
     private final static int MAX_NAME_LENGTH = 200;
 
     @GetMapping
