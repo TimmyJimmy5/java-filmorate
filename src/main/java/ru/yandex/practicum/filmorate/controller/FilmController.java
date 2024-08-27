@@ -19,10 +19,10 @@ import org.slf4j.LoggerFactory;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private final Logger log = LoggerFactory.getLogger(FilmController.class);
+    private static final Logger log = LoggerFactory.getLogger(FilmController.class);
     private final Map<Long, Film> films = new HashMap<>();
-    private final LocalDate FIRST_FILM_DATE = LocalDate.of(1895, 12, 28);
-    private final static int MAX_NAME_LENGTH = 200;
+    private static final LocalDate FIRST_FILM_DATE = LocalDate.of(1895, 12, 28);
+    private static final int MAX_NAME_LENGTH = 200;
 
     @GetMapping
     public Collection<Film> findAll() {
