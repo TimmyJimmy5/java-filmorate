@@ -132,6 +132,7 @@ public class UserController {
             throw new ConditionsNotMetException("Login не должен быть пустым или содержать пробелы.");
         }
     }
+
     private void userEmailTakenCheck(User user) {
         if (users.containsValue(user)) {
             log.error("Error: Этот электронный адрес уже используется.");
