@@ -111,6 +111,10 @@ public class FilmController {
             log.error("Error: Описание фильма не может быть пустым.");
             throw new ConditionsNotMetException("Описание фильма не может быть пустым.");
         }
+        if (film.getDescription().length() > MAX_NAME_LENGTH) {
+            log.error("Error: Описание длиннее {} знаков.", MAX_NAME_LENGTH);
+            throw new ConditionsNotMetException("Описание длиннее 200 знаков.");
+        }
     }
 
     private void filmReleaseDateValidation(Film film) {
