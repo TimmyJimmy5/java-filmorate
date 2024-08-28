@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -13,13 +15,11 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+@Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private static final Logger log = LoggerFactory.getLogger(FilmController.class);
     private final Map<Long, Film> films = new HashMap<>();
     private static final LocalDate FIRST_FILM_DATE = LocalDate.of(1895, 12, 28);
     private static final int MAX_NAME_LENGTH = 200;
@@ -30,7 +30,7 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film) {
+    public Film create(@Valid @RequestBody Film film) {
         filmNullCheck(film);
         filmNameValidation(film);
         filmReleaseDateValidation(film);
@@ -42,7 +42,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film update(@RequestBody Film newFilm) {
+    public Film update(@Valid @RequestBody Film newFilm) {
         filmNullCheck(newFilm);
         filmNullIdCheck(newFilm);
         if (films.containsKey(newFilm.getId())) {
@@ -110,10 +110,6 @@ public class FilmController {
         if (film.getDescription() == null || film.getDescription().isEmpty()) {
             log.error("Error: Описание фильма не может быть пустым.");
             throw new ConditionsNotMetException("Описание фильма не может быть пустым.");
-        }
-        if (film.getDescription().length() > MAX_NAME_LENGTH) {
-            log.error("Error: Описание длиннее {} знаков.", MAX_NAME_LENGTH);
-            throw new ConditionsNotMetException("Описание длиннее 200 знаков.");
         }
     }
 
