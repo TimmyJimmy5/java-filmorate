@@ -35,8 +35,8 @@ public class UserController {
     public User create(@Valid @RequestBody User user) {
             log.debug("Beginning new user data validation.");
             userNullCheck(user);
-            userEmailTakenCheck(user);
             userEmailValidation(user);
+            userEmailTakenCheck(user);
             userLoginValidation(user);
             userBirthdayValidation(user);
             userLoginToEmptyName(user);
@@ -51,14 +51,14 @@ public class UserController {
     @PutMapping
     public User update(@Valid @RequestBody User newUser) {
         userNullCheck(newUser);
+        userNullIdCheck(newUser);
         if (users.containsKey(newUser.getId())) {
             log.debug("Beginning user data validation.");
-            userNullIdCheck(newUser);
-            userEmailTakenCheck(newUser);
             User oldUser = users.get(newUser.getId());
             updateNewUserFieldsFromOldUser(newUser, oldUser);
-            userLoginToEmptyName(newUser);
             userEmailValidation(newUser);
+            userEmailTakenCheck(newUser);
+            userLoginToEmptyName(newUser);
             userLoginValidation(newUser);
             userBirthdayValidation(newUser);
             log.debug("All validations passed. Putting new user data {} into memory.", newUser.getId());
@@ -87,8 +87,8 @@ public class UserController {
     }
 
     private void updateNewUserFieldsFromOldUser(User newUser, User oldUser) {
-        if (newUser.getEmail() == null) {
-            log.debug("Email is empty. Filling it with previous Email value.");
+        if (newUser.getEmail().equals(oldUser.getEmail())) {
+            log.debug("Email is the same as before. Filling it with the same Email value.");
             newUser.setEmail(oldUser.getEmail());
         }
         if (newUser.getLogin() == null) {
