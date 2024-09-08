@@ -4,11 +4,15 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+
 import java.io.IOException;
 import java.time.LocalDate;
 
 public class FilmControllerTest {
-    FilmController filmController = new FilmController();
+    FilmStorage filmStorage = new InMemoryFilmStorage();
+    FilmController filmController = new FilmController(filmStorage);
 
     @Test
     public void assertErrorUponEmptyFilmCreate() throws IOException {
