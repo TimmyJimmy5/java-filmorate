@@ -20,7 +20,7 @@ public interface FilmStorage {
 
     boolean deleteLike(Long filmId, Long userId);
 
-    Optional<Film> findFilmById(Long id);
+    Optional<Film> findFilmById(Long filmId);
 
     List<Film> getTopFilms(int size);
 }

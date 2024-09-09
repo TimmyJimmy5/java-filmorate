@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -27,4 +28,8 @@ public class Film {
 
     private LocalDate releaseDate;
     private Integer duration;
+
+    public Film() {
+        this.likes = new HashSet<>();
+    }
 }

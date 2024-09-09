@@ -18,6 +18,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 
 @RestController
@@ -34,6 +35,11 @@ public class FilmController {
     @GetMapping
     public Collection<Film> findAll() {
         return filmService.findAll();
+    }
+
+    @GetMapping("/{filmId}")
+    public Optional<Film> findFilmById(@PathVariable Long filmId) {
+        return filmService.findFilmById(filmId);
     }
 
     @PostMapping
@@ -54,13 +60,13 @@ public class FilmController {
         return filmService.getTopFilms(size);
     }
 
-    @PutMapping("/{id}/like/{userId}")
-    public boolean putLike(@PathVariable Long id, @PathVariable Long userId) {
-        return filmService.putLike(id, userId);
+    @PutMapping("/{filmId}/like/{userId}")
+    public boolean putLike(@PathVariable Long filmId, @PathVariable Long userId) {
+        return filmService.putLike(filmId, userId);
     }
 
-    @DeleteMapping("/{id}/like/{userId}")
-    public boolean deleteLike(@PathVariable Long id, @PathVariable Long userId) {
-        return filmService.deleteLike(id, userId);
+    @DeleteMapping("/{filmId}/like/{userId}")
+    public boolean deleteLike(@PathVariable Long filmId, @PathVariable Long userId) {
+        return filmService.deleteLike(filmId, userId);
     }
 }
