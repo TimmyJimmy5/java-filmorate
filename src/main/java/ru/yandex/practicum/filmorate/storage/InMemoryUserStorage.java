@@ -62,7 +62,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public boolean addFriend(Long userId, Long friendId) {
-        if (users.get(userId).getFriends().add(friendId) && users.get(friendId).getFriends().add(userId)) {
+        if (users.get(userId).getFriends().remove(friendId) && users.get(friendId).getFriends().remove(userId)) {
             return true;
         } else {
             throw new DuplicatedDataException("Пользователь уже состоит в списке друзей.");
