@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -12,7 +13,8 @@ import java.time.LocalDate;
 
 public class UserControllerTest {
     UserStorage userStorage = new InMemoryUserStorage();
-    UserController userController = new UserController(userStorage);
+    UserService userService = new UserService(userStorage);
+    UserController userController = new UserController(userService);
 
     @Test
     public void userCreateSuccess() throws IOException {
