@@ -57,9 +57,6 @@ public class UserService {
 
     public Set<User> getFriends(Long userId) {
         checkId(userId);
-        if (userStorage.getFriends(userId).isEmpty()) {
-            throw new NotFoundException("У пользователя " + userId + " пока нет друзей.");
-        }
         return userStorage.getFriends(userId);
     }
 
