@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
+import ru.yandex.practicum.filmorate.exception.BadInputException;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -57,6 +57,9 @@ public class UserService {
 
     public Set<User> getFriends(Long userId) {
         checkId(userId);
+        if (userStorage.getFriends(userId).isEmpty()) {
+            throw new NotFoundException("У пользователя " + userId + " пока нет друзей.");
+        }
         return userStorage.getFriends(userId);
     }
 
@@ -141,32 +144,32 @@ public class UserService {
     private void userNullIdCheck(User user) {
         if (user.getId() == null) {
             log.error("Error: Id должен быть указан.");
-            throw new ConditionsNotMetException("Id должен быть указан.");
+            throw new BadInputException("Id должен быть указан.");
         }
     }
 
     private void userNullCheck(User user) {
         if (user == null) {
             log.error("Тело запроса не может быть пустым.");
-            throw new ConditionsNotMetException("Тело запроса не может быть пустым.");
+            throw new BadInputException("Тело запроса не может быть пустым.");
         }
     }
 
     private void userBirthdayValidation(User user) {
         if (user.getBirthday() == null) {
             log.error("Error: Дата рождения не указана.");
-            throw new ConditionsNotMetException("Дата рождения не указана.");
+            throw new BadInputException("Дата рождения не указана.");
         }
         if (user.getBirthday().isAfter(LocalDate.now())) {
             log.error("Error: Дата рождения не может быть в будущем.");
-            throw new ConditionsNotMetException("Дата рождения не может быть в будущем");
+            throw new BadInputException("Дата рождения не может быть в будущем");
         }
     }
 
     private void userLoginValidation(User user) {
         if (user.getLogin() == null || user.getLogin().contains(" ")) {
             log.error("Error: Login не должен быть пустым или содержать пробелы.");
-            throw new ConditionsNotMetException("Login не должен быть пустым или содержать пробелы.");
+            throw new BadInputException("Login не должен быть пустым или содержать пробелы.");
         }
     }
 
@@ -180,11 +183,11 @@ public class UserService {
     private void userEmailValidation(User user) {
         if (user.getEmail() == null || user.getEmail().isBlank()) {
             log.error("Error: Email должен быть указан.");
-            throw new ConditionsNotMetException("Email должен быть указан.");
+            throw new BadInputException("Email должен быть указан.");
         }
         if (!emailValidation(user.getEmail())) {
             log.error("Error: Некорректный формат Email.");
-            throw new ConditionsNotMetException("Некорректный формат Email.");
+            throw new BadInputException("Некорректный формат Email.");
         }
     }
 

@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
+import ru.yandex.practicum.filmorate.exception.BadInputException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -84,18 +84,18 @@ public class FilmService {
     private void filmDurationValidation(Film film) {
         if (film.getDuration() == null) {
             log.error("Error: продолжительность фильма не может отсутствовать.");
-            throw new ConditionsNotMetException("Продолжительность фильма не может отсутствовать.");
+            throw new BadInputException("Продолжительность фильма не может отсутствовать.");
         }
         if (film.getDuration() < 0) {
             log.error("Error: продолжительность фильма не может быть отрицательной.");
-            throw new ConditionsNotMetException("Продолжительность фильма не может быть отрицательной.");
+            throw new BadInputException("Продолжительность фильма не может быть отрицательной.");
         }
     }
 
     private void filmNullCheck(Film film) {
         if (film == null) {
             log.error("Тело запроса не может быть пустым.");
-            throw new ConditionsNotMetException("Тело запроса не может быть пустым.");
+            throw new BadInputException("Тело запроса не может быть пустым.");
         }
     }
 
@@ -121,29 +121,29 @@ public class FilmService {
     private void filmDescriptionValidation(Film film) {
         if (film.getDescription() == null || film.getDescription().isEmpty()) {
             log.error("Error: Описание фильма не может быть пустым.");
-            throw new ConditionsNotMetException("Описание фильма не может быть пустым.");
+            throw new BadInputException("Описание фильма не может быть пустым.");
         }
     }
 
     private void filmReleaseDateValidation(Film film) {
         if (film.getReleaseDate() == null) {
             log.error("Error: Дата релиза не может быть пустой.");
-            throw new ConditionsNotMetException("Дата релиза не может быть пустой.");
+            throw new BadInputException("Дата релиза не может быть пустой.");
         }
         if (film.getReleaseDate().isBefore(FIRST_FILM_DATE)) {
             log.error("Error: Дата релиза не может быть ранее {}.", FIRST_FILM_DATE);
-            throw new ConditionsNotMetException("Дата релиза не может быть ранее 28 декабря 1895 года.");
+            throw new BadInputException("Дата релиза не может быть ранее 28 декабря 1895 года.");
         }
     }
 
     private void filmNameValidation(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
             log.error("Error: Название не может быть пустым.");
-            throw new ConditionsNotMetException("Название не может быть пустым.");
+            throw new BadInputException("Название не может быть пустым.");
         }
         if (film.getName().length() > MAX_NAME_LENGTH) {
             log.error("Error: Название длиннее {} знаков.", MAX_NAME_LENGTH);
-            throw new ConditionsNotMetException("Название длиннее 200 знаков.");
+            throw new BadInputException("Название длиннее 200 знаков.");
         }
     }
 

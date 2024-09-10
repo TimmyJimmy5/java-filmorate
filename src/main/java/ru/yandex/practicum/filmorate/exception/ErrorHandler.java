@@ -16,15 +16,15 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> conditionsNotMetException(final ConditionsNotMetException e) {
-        return Map.of("Error", e.getMessage());
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> badInputExceptionParametered(final BadInputExceptionParametered e) {
+        return Map.of(e.getParameter(), e.getReason());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> badInputException(final BadInputException e) {
-        return Map.of(e.getParameter(), e.getReason());
+        return Map.of("Error", e.getMessage());
     }
 
     @ExceptionHandler

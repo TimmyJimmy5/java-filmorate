@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.exception.BadInputException;
+import ru.yandex.practicum.filmorate.exception.BadInputExceptionParametered;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -55,7 +55,7 @@ public class FilmController {
     @GetMapping("/popular")
     public List<Film> getFilmsTop(@RequestParam(defaultValue = "10") int size) {
         if (size < 1) {
-            throw new BadInputException("size", "Некорректный размер выборки. Размер должен быть больше нуля");
+            throw new BadInputExceptionParametered("size", "Некорректный размер выборки. Размер должен быть больше нуля");
         }
         return filmService.getTopFilms(size);
     }
