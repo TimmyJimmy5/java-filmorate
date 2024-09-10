@@ -71,9 +71,8 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public boolean removeFriend(Long userId, Long friendId) {
-        if (users.get(userId).getFriends().contains(friendId) && users.get(userId).getFriends().contains(userId)) {
-            users.get(friendId).getFriends().remove(userId);
-            return users.get(userId).getFriends().remove(friendId);
+        if (users.get(userId).getFriends().remove(friendId) && users.get(friendId).getFriends().remove(userId)) {
+            return true;
         } else {
             throw new NotFoundException("Пользователь не состоит в списке друзей.");
         }
