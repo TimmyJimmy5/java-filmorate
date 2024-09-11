@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.BadInputException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.service.InMemoryUserService;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -13,7 +13,7 @@ import java.time.LocalDate;
 
 public class UserControllerTest {
     UserStorage userStorage = new InMemoryUserStorage();
-    UserService userService = new UserService(userStorage);
+    InMemoryUserService userService = new InMemoryUserService(userStorage);
     UserController userController = new UserController(userService);
 
     @Test

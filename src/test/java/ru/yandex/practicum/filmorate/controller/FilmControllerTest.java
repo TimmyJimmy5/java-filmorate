@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.BadInputException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.InMemoryFilmService;
+import ru.yandex.practicum.filmorate.service.InMemoryUserService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
@@ -17,8 +19,8 @@ import java.time.LocalDate;
 public class FilmControllerTest {
     UserStorage userStorage = new InMemoryUserStorage();
     FilmStorage filmStorage = new InMemoryFilmStorage();
-    UserService userService = new UserService(userStorage);
-    FilmService filmService = new FilmService(filmStorage, userService);
+    UserService userService = new InMemoryUserService(userStorage);
+    FilmService filmService = new InMemoryFilmService(filmStorage, (InMemoryUserService) userService);
     FilmController filmController = new FilmController(filmService);
 
     @Test

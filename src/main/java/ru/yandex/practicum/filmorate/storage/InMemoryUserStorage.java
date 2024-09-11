@@ -74,4 +74,9 @@ public class InMemoryUserStorage implements UserStorage {
         users.get(userId).getFriends().remove(friendId);
         return users.get(friendId).getFriends().remove(userId);
     }
+
+    @Override
+    public boolean isExist(Long userId) {
+        return users.containsKey(userId);
+    }
 }
