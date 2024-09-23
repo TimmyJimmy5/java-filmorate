@@ -28,6 +28,9 @@ public class Film {
 
     private LocalDate releaseDate;
     private Integer duration;
+    private Rating rating;
+    private Set<Genre> genres;
+    private Set<Director> directors;
 
     public Film() {
         this.likes = new HashSet<>();
