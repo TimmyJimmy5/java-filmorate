@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,8 +14,6 @@ import java.util.Set;
 public class User {
     private Long id;
     private Set<Long> friends;
-
-    @NotBlank
     private String email;
     private String login;
     private String name;
