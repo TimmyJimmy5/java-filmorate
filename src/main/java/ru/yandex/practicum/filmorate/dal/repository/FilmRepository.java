@@ -12,51 +12,19 @@ import java.util.Optional;
 public class FilmRepository extends BaseRepository<Film> {
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM films WHERE id = ?";
     private static final String FIND_ALL_QUERY = "SELECT * FROM films";
+    private static final String DELETE_QUERY = "DELETE FROM films WHERE id = ?";
+    private static final String ADD_LIKE = "INSERT INTO film_user_likes_set(film_id, user_id) VALUES (?, ?)";
+    private static final String DELETE_LIKE = "DELETE FROM film_user_likes_set WHERE film_id = ? AND user_id = ? ";
+    private static final String FIND_LIKE = "SELECT * FROM film_user_likes_set WHERE film_id = ? AND user_id = ? ";
+    private static final String ADD_GENRE_FOR_FILM = "INSERT INTO film_genres(film_id, genre_id) VALUES (?, ?) ";
+    private static final String DELETE_ALL_GENRE_FOR_FILM = "DELETE FROM film_genres WHERE film_id = ? ";
+    private static final String ADD_DIRECTOR_FOR_FILM = "INSERT INTO film_directors(film_id, director_id) VALUES (?, ?) ";
+    private static final String DELETE_ALL_DIRECTOR_FOR_FILM = "DELETE FROM film_directors WHERE film_id = ? ";
+    private static final String SEARCH_FILM = "SELECT * FROM films WHERE LOWER(name) LIKE CONCAT('%',?,'%')";
     private static final String INSERT_QUERY = "INSERT INTO films(name, description, release_date, duration, rating_id)" +
             "VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, " +
             "rating_id = ? WHERE id = ?";
-    private static final String DELETE_QUERY = "DELETE FROM films WHERE id = ?";
-    private static final String FIND_TOP_FILMS =
-            """
-                    SELECT f."id", f."name", f."description", f."release_date", f."duration", f."rating_id" FROM "films" AS f
-                    LEFT JOIN "user_films_liked" AS ufl ON f."id" = ufl."film_id"
-                    GROUP BY f."id"
-                    ORDER BY COUNT(ufl."film_id") DESC
-                    LIMIT ?
-                    """;
-
-    private static final String ADD_LIKE =
-            """
-                    INSERT INTO "user_films_liked"("film_id", "user_id") VALUES (?, ?)
-                    """;
-    private static final String DELETE_LIKE =
-            """
-                    DELETE FROM "user_films_liked" WHERE "film_id" = ? AND "user_id" = ?
-                    """;
-    private static final String ADD_GENRE_FOR_FILM =
-            """
-                    INSERT INTO "film_genres"("film_id", "genre_id") VALUES (?, ?)
-                    """;
-    private static final String DELETE_ALL_GENRE_FOR_FILM =
-            """
-                    DELETE FROM "film_genres" WHERE "film_id" = ?
-                    """;
-
-    private static final String ADD_DIRECTOR_FOR_FILM =
-            """
-                    INSERT INTO "film_directors"("film_id", "director_id") VALUES (?, ?)
-                    """;
-
-    private static final String DELETE_ALL_DIRECTOR_FOR_FILM =
-            """
-                    DELETE FROM "film_directors" WHERE "film_id" = ?
-                    """;
-
-    private static final String SEARCH_FILM =
-            """
-                    SELECT * FROM "films" WHERE LOWER("name") LIKE CONCAT('%',?,'%');
-                    """;
 
     private static final String SEARCH_FILM_DIRECTOR =
             """
@@ -65,6 +33,15 @@ public class FilmRepository extends BaseRepository<Film> {
                     JOIN "film_directors" AS fd ON f."id" = fd."film_id"
                     JOIN "directors" AS d ON fd."director_id" = d."id"
                     WHERE LOWER(d."name") LIKE CONCAT('%',?,'%')
+                    """;
+
+    private static final String FIND_TOP_FILMS =
+            """
+                    SELECT f."id", f."name", f."description", f."release_date", f."duration", f."rating_id" FROM "films" AS f
+                    LEFT JOIN "film_user_likes_set" AS ufl ON f."id" = ufl."film_id"
+                    GROUP BY f."id"
+                    ORDER BY COUNT(ufl."film_id") DESC
+                    LIMIT ?
                     """;
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
@@ -115,6 +92,10 @@ public class FilmRepository extends BaseRepository<Film> {
 
     public boolean deleteLike(Long id, Long userId) {
         return jdbc.update(DELETE_LIKE, id, userId) > 0;
+    }
+
+    public boolean findLike(Long id, Long userId) {
+        return jdbc.queryForRowSet(FIND_LIKE, id, userId).next();
     }
 
     public List<Film> getTopFilms(int count) {

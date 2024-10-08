@@ -12,14 +12,14 @@ import java.util.Set;
 @Data
 public class UserRequest {
     private Long id;
-    @NotBlank(message = "Пустой E-mail")
-    @Email(message = "Некорректный E-mail")
+    @NotBlank(message = "E-mail не может быть пустым.")
+    @Email(message = "Некорректный формат E-mail")
     private String email;
-    @NotBlank(message = "Пустой логин")
+    @NotBlank(message = "Логин не может быть пустым.")
     @Pattern(regexp = "^[a-zA-Z0-9]{4,12}$")
     private String login;
     private String name;
-    @Past(message = "Некорректная дата рождения")
+    @Past(message = "Некорректная дата рождения.")
     private LocalDate birthday;
     private Set<Long> friendsSet;
 }

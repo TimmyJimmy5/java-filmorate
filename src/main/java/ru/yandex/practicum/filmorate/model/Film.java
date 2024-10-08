@@ -23,10 +23,4 @@ public class Film {
     private Set<Long> likes;
     private Set<Genre> genres;
     private Set<Director> directors;
-
-    public Film() {
-        genres = new HashSet<>();
-        likes = new HashSet<>();
-        directors = new HashSet<>();
-    }
 }

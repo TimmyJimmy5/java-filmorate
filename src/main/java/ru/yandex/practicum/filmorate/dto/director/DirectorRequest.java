@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 public class DirectorRequest {
     private Long id;
-    @NotBlank(message = "Пустое имя")
+    @NotBlank(message = "Имя не может быть пустым.")
     private String name;
 }

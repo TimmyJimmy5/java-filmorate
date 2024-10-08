@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.repository.UserRepository;
 import ru.yandex.practicum.filmorate.exception.BadInputException;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -58,12 +59,6 @@ public class InMemoryUserService implements UserService {
     public Set<User> getFriends(Long userId) {
         checkId(userId);
         return userStorage.getFriends(userId);
-    }
-
-    public void checkId(Long id) {
-        if (!userStorage.isExist(id)) {
-            throw new NotFoundException("Объекта с ID " + id + " не существует");
-        }
     }
 
     public Collection<User> findAll() {
@@ -192,5 +187,13 @@ public class InMemoryUserService implements UserService {
         Pattern pattern = Pattern.compile("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}");
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
+    }
+
+    public void checkUserId(UserRepository userRepository, Long... ids) {
+        for (Long id : ids) {
+            if (userRepository.findById(id).isEmpty()) {
+                throw new NotFoundException("Юзера с ID " + id + " не существует");
+            }
+        }
     }
 }
