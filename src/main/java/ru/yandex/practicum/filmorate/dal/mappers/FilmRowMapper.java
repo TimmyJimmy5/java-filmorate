@@ -1,8 +1,12 @@
 package ru.yandex.practicum.filmorate.dal.mappers;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dal.repository.DirectorRepository;
 import ru.yandex.practicum.filmorate.dal.repository.GenreRepository;
+import ru.yandex.practicum.filmorate.dal.repository.RatingRepository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
@@ -12,12 +16,10 @@ import java.sql.SQLException;
 import java.util.Set;
 
 @Component
+@RequiredArgsConstructor
 public class FilmRowMapper implements RowMapper<Film> {
-    private final GenreRepository genreRepository;
-
-    public FilmRowMapper(GenreRepository genreRepository) {
-        this.genreRepository = genreRepository;
-    }
+    GenreRepository genreRepository;
+    RatingRepository ratingRepository;
 
     @Override
     public Film mapRow(ResultSet resultSet, int rowNum) throws SQLException {
@@ -27,10 +29,11 @@ public class FilmRowMapper implements RowMapper<Film> {
         film.setDescription(resultSet.getString("description"));
         film.setReleaseDate(resultSet.getDate("release_date").toLocalDate());
         film.setDuration(resultSet.getInt("duration"));
+        Long ratingId = resultSet.getLong("rating_id");
 
-        Rating rating = new Rating();
-        rating.setId(resultSet.getLong("rating_id"));
-        film.setRating(rating);
+        Rating mpa = ratingRepository.get(ratingId)
+                .orElseThrow(() -> new NotFoundException("Рейтинга с ID = " + ratingId + " не существует"));
+        film.setMpa(mpa);
 
         Set<Genre> genres = genreRepository.getForFilm(film.getId());
         film.setGenres(genres);

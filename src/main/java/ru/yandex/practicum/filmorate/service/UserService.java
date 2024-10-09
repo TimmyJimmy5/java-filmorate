@@ -1,22 +1,26 @@
 package ru.yandex.practicum.filmorate.service;
 
-import ru.yandex.practicum.filmorate.model.User;
+import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.user.UserDto;
+import ru.yandex.practicum.filmorate.dto.user.UserRequest;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
+@Service
 public interface UserService {
     boolean addFriend(Long userId, Long friendId);
 
     boolean removeFriend(Long userId, Long friendId);
 
-    Set<User> getCommonFriends(Long userId, Long otherId);
+    Set<UserDto> getCommonFriends(Long userId, Long otherId);
 
-    Set<User> getFriends(Long userId);
+    List<UserDto> getFriends(Long userId);
 
-    Collection<User> findAll();
+    Collection<UserDto> findAll();
 
-    User create(User user);
+    UserDto create(UserRequest userRequest);
 
-    User update(User newUser);
+    UserDto update(UserRequest userRequest);
 }

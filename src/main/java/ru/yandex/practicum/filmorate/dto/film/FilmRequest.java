@@ -23,7 +23,7 @@ public class FilmRequest {
     private LocalDate releaseDate;
     @Positive(message = "Отрицательная или нулевая длительность.")
     private Integer duration;
-    private RatingRequest rating;
+    private RatingRequest mpa;
     private List<GenreRequest> genres;
     private List<DirectorRequest> directors;
 }

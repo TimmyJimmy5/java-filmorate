@@ -1,192 +1,99 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.repository.UserRepository;
-import ru.yandex.practicum.filmorate.exception.BadInputException;
-import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
+import ru.yandex.practicum.filmorate.dto.user.UserDto;
+import ru.yandex.practicum.filmorate.dto.user.UserRequest;
+import ru.yandex.practicum.filmorate.exception.BadInputExceptionParametered;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class InMemoryUserService implements UserService {
-    private final UserStorage userStorage;
+    private final UserRepository userRepository;
 
-    @Autowired
-    public InMemoryUserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
-
+    @Override
     public boolean addFriend(Long userId, Long friendId) {
         if (userId.equals(friendId)) {
             throw new RuntimeException("Нельзя добавить самого себя в друзья");
         }
-        checkId(userId);
-        checkId(friendId);
-        return userStorage.addFriend(userId, friendId);
+        checkUserId(userRepository, userId);
+        checkUserId(userRepository, friendId);
+        if (userRepository.isFriendRequest(userId, friendId)) {
+            return userRepository.acceptRequest(userId, friendId);
+        }
+        return userRepository.addFriend(userId, friendId);
     }
 
+    @Override
     public boolean removeFriend(Long userId, Long friendId) {
         if (userId.equals(friendId)) {
             throw new RuntimeException("Нельзя удалить самого себя из друзей");
         }
-        checkId(userId);
-        checkId(friendId);
-        return userStorage.removeFriend(userId, friendId);
+        checkUserId(userRepository, userId);
+        checkUserId(userRepository, friendId);
+        if (userRepository.isFriend(userId, friendId)) {
+            return userRepository.removeRequest(userId, friendId);
+        }
+        return userRepository.deleteFriend(userId, friendId);
     }
 
-    public Set<User> getCommonFriends(Long userId, Long otherId) {
-        checkId(userId);
-        checkId(otherId);
-        if (userStorage.getUsers().get(userId).getFriends().isEmpty()) {
-            throw new NotFoundException("У пользователя " + userId + " список друзей пока пуст");
-        }
-        if (userStorage.getUsers().get(otherId).getFriends().isEmpty()) {
-            throw new NotFoundException("У пользователя " + otherId + " список друзей пока пуст");
-        }
-        return userStorage.getCommonFriends(userId, otherId);
+    @Override
+    public Set<UserDto> getCommonFriends(Long userId, Long otherId) {
+        checkUserId(userRepository, userId);
+        checkUserId(userRepository, otherId);
+        return userRepository.getCommonFriends(userId, otherId).stream()
+                .map(UserMapper::mapToUserDto)
+                .collect(Collectors.toSet());
     }
 
-    public Set<User> getFriends(Long userId) {
-        checkId(userId);
-        return userStorage.getFriends(userId);
+    @Override
+    public List<UserDto> getFriends(Long userId) {
+        checkUserId(userRepository, userId);
+        return userRepository.getFriends(userId).stream()
+                .map(UserMapper::mapToUserDto)
+                .sorted(Comparator.comparingLong(UserDto::getId))
+                .collect(Collectors.toList());
     }
 
-    public Collection<User> findAll() {
-        return userStorage.findAll();
+    @Override
+    public Collection<UserDto> findAll() {
+        return userRepository.getAll().stream()
+                .map(UserMapper::mapToUserDto)
+                .collect(Collectors.toList());
     }
 
-    public User create(User user) {
-        log.debug("Beginning new user data validation.");
-        userNullCheck(user);
-        userEmailValidation(user);
-        userEmailTakenCheck(user);
-        userLoginValidation(user);
-        userBirthdayValidation(user);
-        userLoginToEmptyName(user);
-        log.debug("All new user data validations passed. Setting new id for this user.");
-        user.setId(getNextId());
-        log.debug("New user's id is {}. Putting into memory.", user.getId());
-        userStorage.create(user);
-        log.debug("New user {} successfully added.", user.getId());
-        return user;
+    @Override
+    public UserDto create(UserRequest userRequest) {
+        if (userRequest.getName() == null || userRequest.getName().isBlank()) {
+            userRequest.setName(userRequest.getLogin());
+        }
+        User user = UserMapper.mapToUser(userRequest);
+        user = userRepository.save(user);
+        return UserMapper.mapToUserDto(user);
     }
 
-    public User update(User newUser) {
-        userNullCheck(newUser);
-        userNullIdCheck(newUser);
-        if (userStorage.getUsers().containsKey(newUser.getId())) {
-            log.debug("Beginning user data validation.");
-            User oldUser = userStorage.getUsers().get(newUser.getId());
-            updateNewUserFieldsFromOldUser(newUser, oldUser);
-            userEmailValidation(newUser);
-            userEmailTakenCheck(newUser);
-            userLoginToEmptyName(newUser);
-            userLoginValidation(newUser);
-            userBirthdayValidation(newUser);
-            log.debug("All validations passed. Putting new user data {} into memory.", newUser.getId());
-            userStorage.update(newUser);
-            log.debug("User {} successfully updated.", newUser.getId());
-            return newUser;
+    @Override
+    public UserDto update(UserRequest userRequest) {
+        if (userRequest.getId() == null) {
+            throw new BadInputExceptionParametered("ID", "Должен быть указан ID");
         }
-        log.error("Error: Пользователь {} не найден.", newUser.getId());
-        throw new NotFoundException("Пользователь не найден.");
-    }
-
-    private long getNextId() {
-        long currentMaxId = userStorage.getUsers().keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
-    }
-
-    private void userLoginToEmptyName(User user) {
-        if (user.getName() == null || user.getName().isEmpty()) {
-            log.debug("Username is empty. Filling it with login value.");
-            user.setName(user.getLogin());
-        }
-    }
-
-    private void updateNewUserFieldsFromOldUser(User newUser, User oldUser) {
-        if (newUser.getEmail().equals(oldUser.getEmail())) {
-            log.debug("Email is the same as before. Filling it with the same Email value.");
-            newUser.setEmail(oldUser.getEmail());
-        }
-        if (newUser.getLogin() == null) {
-            log.debug("Login is empty. Filling it with previous Login value.");
-            newUser.setLogin(oldUser.getLogin());
-        }
-        if (newUser.getBirthday() == null) {
-            log.debug("Birthday is empty. Filling it with previous Birthday value.");
-            newUser.setBirthday(oldUser.getBirthday());
-        }
-    }
-
-    private void userNullIdCheck(User user) {
-        if (user.getId() == null) {
-            log.error("Error: Id должен быть указан.");
-            throw new BadInputException("Id должен быть указан.");
-        }
-    }
-
-    private void userNullCheck(User user) {
-        if (user == null) {
-            log.error("Тело запроса не может быть пустым.");
-            throw new BadInputException("Тело запроса не может быть пустым.");
-        }
-    }
-
-    private void userBirthdayValidation(User user) {
-        if (user.getBirthday() == null) {
-            log.error("Error: Дата рождения не указана.");
-            throw new BadInputException("Дата рождения не указана.");
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.error("Error: Дата рождения не может быть в будущем.");
-            throw new BadInputException("Дата рождения не может быть в будущем");
-        }
-    }
-
-    private void userLoginValidation(User user) {
-        if (user.getLogin() == null || user.getLogin().contains(" ")) {
-            log.error("Error: Login не должен быть пустым или содержать пробелы.");
-            throw new BadInputException("Login не должен быть пустым или содержать пробелы.");
-        }
-    }
-
-    private void userEmailTakenCheck(User user) {
-        if (userStorage.getUsers().containsValue(user)) {
-            log.error("Error: Этот электронный адрес уже используется.");
-            throw new DuplicatedDataException("Этот электронный адрес уже используется.");
-        }
-    }
-
-    private void userEmailValidation(User user) {
-        if (user.getEmail() == null || user.getEmail().isBlank()) {
-            log.error("Error: Email должен быть указан.");
-            throw new BadInputException("Email должен быть указан.");
-        }
-        if (!emailValidation(user.getEmail())) {
-            log.error("Error: Некорректный формат Email.");
-            throw new BadInputException("Некорректный формат Email.");
-        }
-    }
-
-    private boolean emailValidation(String email) {
-        Pattern pattern = Pattern.compile("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}");
-        Matcher matcher = pattern.matcher(email);
-        return matcher.matches();
+        User updatedUser = userRepository.findById(userRequest.getId())
+                .map(user -> UserMapper.updateUserFields(user, userRequest))
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userRequest.getId() + " не найден"));
+        updatedUser = userRepository.update(updatedUser);
+        return UserMapper.mapToUserDto(updatedUser);
     }
 
     public void checkUserId(UserRepository userRepository, Long... ids) {

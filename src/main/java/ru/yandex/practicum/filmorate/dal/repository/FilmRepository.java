@@ -21,26 +21,24 @@ public class FilmRepository extends BaseRepository<Film> {
     private static final String ADD_DIRECTOR_FOR_FILM = "INSERT INTO film_directors(film_id, director_id) VALUES (?, ?) ";
     private static final String DELETE_ALL_DIRECTOR_FOR_FILM = "DELETE FROM film_directors WHERE film_id = ? ";
     private static final String SEARCH_FILM = "SELECT * FROM films WHERE LOWER(name) LIKE CONCAT('%',?,'%')";
-    private static final String INSERT_QUERY = "INSERT INTO films(name, description, release_date, duration, rating_id)" +
-            "VALUES (?, ?, ?, ?, ?)";
-    private static final String UPDATE_QUERY = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, " +
-            "rating_id = ? WHERE id = ?";
+    private static final String INSERT_QUERY = "INSERT INTO films(name, description, release_date, duration, rating_id) VALUES (?, ?, ?, ?, ?)";
+    private static final String UPDATE_QUERY = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, rating_id = ? WHERE id = ?";
 
     private static final String SEARCH_FILM_DIRECTOR =
             """
-                    SELECT f."id", f."name", f."description", f."release_date", f."duration", f."rating_id"
-                    FROM "films" AS f
-                    JOIN "film_directors" AS fd ON f."id" = fd."film_id"
-                    JOIN "directors" AS d ON fd."director_id" = d."id"
-                    WHERE LOWER(d."name") LIKE CONCAT('%',?,'%')
+                    SELECT f.id, f.name, f.description, f.release_date, f.duration, f.rating_id
+                    FROM films AS f
+                    JOIN film_directors AS fd ON f.id = fd.film_id
+                    JOIN directors AS d ON fd.director_id = d.id
+                    WHERE LOWER(d.name) LIKE CONCAT('%',?,'%')
                     """;
 
     private static final String FIND_TOP_FILMS =
             """
-                    SELECT f."id", f."name", f."description", f."release_date", f."duration", f."rating_id" FROM "films" AS f
-                    LEFT JOIN "film_user_likes_set" AS ufl ON f."id" = ufl."film_id"
-                    GROUP BY f."id"
-                    ORDER BY COUNT(ufl."film_id") DESC
+                    SELECT f.id, f.name, f.description, f.release_date, f.duration, f.rating_id FROM films AS f
+                    LEFT JOIN film_user_likes_set AS ufl ON f.id = ufl.film_id
+                    GROUP BY f.id
+                    ORDER BY COUNT(ufl.film_id) DESC
                     LIMIT ?
                     """;
 
@@ -63,7 +61,7 @@ public class FilmRepository extends BaseRepository<Film> {
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
-                film.getRating().getId()
+                film.getMpa().getId()
         );
         film.setId(id);
         return film;
@@ -76,7 +74,7 @@ public class FilmRepository extends BaseRepository<Film> {
                 newFilm.getDescription(),
                 newFilm.getReleaseDate(),
                 newFilm.getDuration(),
-                newFilm.getRating().getId(),
+                newFilm.getMpa().getId(),
                 newFilm.getId()
         );
         return newFilm;

@@ -3,20 +3,27 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.repository.DirectorRepository;
 import ru.yandex.practicum.filmorate.dal.repository.FilmRepository;
+import ru.yandex.practicum.filmorate.dal.repository.GenreRepository;
 import ru.yandex.practicum.filmorate.dal.repository.RatingRepository;
 import ru.yandex.practicum.filmorate.dal.repository.UserRepository;
 import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.dto.film.FilmRequest;
+import ru.yandex.practicum.filmorate.dto.director.DirectorRequest;
+import ru.yandex.practicum.filmorate.dto.genre.GenreRequest;
 import ru.yandex.practicum.filmorate.exception.BadInputExceptionParametered;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -26,6 +33,8 @@ public class InMemoryFilmService implements FilmService {
     private final FilmRepository filmRepository;
     private final UserRepository userRepository;
     private final RatingRepository ratingRepository;
+    private final GenreRepository genreRepository;
+    private final DirectorRepository directorRepository;
 
     @Override
     public List<FilmDto> getTopFilms(int size) {
@@ -113,10 +122,10 @@ public class InMemoryFilmService implements FilmService {
     }
 
     private void addRating(Film film, FilmRequest filmRequest) {
-        Long ratingId = filmRequest.getRating().getId();
+        Long ratingId = filmRequest.getMpa().getId();
         Rating rating = ratingRepository.get(ratingId)
                 .orElseThrow(() -> new BadInputExceptionParametered("ID", "Рейтинг с ID " + ratingId + " не найден"));
-        film.setRating(rating);
+        film.setMpa(rating);
     }
 
     private void addGenres(Film film, FilmRequest filmRequest) {
@@ -125,6 +134,14 @@ public class InMemoryFilmService implements FilmService {
             film.setGenres(new HashSet<>());
             return;
         }
+        Set<Genre> genres = filmRequest.getGenres().stream()
+                .map(GenreRequest::getId)
+                .map(genreRepository::findById)
+                .map(genre -> genre
+                        .orElseThrow(() -> new NotFoundException("Жанр не найден")))
+                .peek(genre -> filmRepository.addGenreForFilm(film.getId(), genre.getId()))
+                .collect(Collectors.toSet());
+        film.setGenres(genres);
     }
 
     private void addDirector(Film film, FilmRequest filmRequest) {
@@ -133,5 +150,14 @@ public class InMemoryFilmService implements FilmService {
             film.setDirectors(new HashSet<>());
             return;
         }
+
+        Set<Director> directors = filmRequest.getDirectors().stream()
+                .map(DirectorRequest::getId)
+                .map(directorRepository::findById)
+                .map(director -> director
+                        .orElseThrow(() -> new NotFoundException("Режиссер не найден")))
+                .peek(director -> filmRepository.addDirectorForFilm(film.getId(), director.getId()))
+                .collect(Collectors.toSet());
+        film.setDirectors(directors);
     }
 }

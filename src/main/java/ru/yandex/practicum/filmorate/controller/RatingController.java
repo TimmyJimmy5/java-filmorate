@@ -15,7 +15,7 @@ import ru.yandex.practicum.filmorate.service.RatingService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/rating")
+@RequestMapping("/mpa")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RatingController {

@@ -20,43 +20,43 @@ public class UserRepository extends BaseRepository<User> {
     private static final String DELETE_QUERY = "DELETE FROM users WHERE id = ?";
 
     private static final String ADD_FRIEND_QUERY =
-            "INSERT INTO user_friends(user_id, friend_id, is_accept) VALUES (?, ?, false)";
+            "INSERT INTO user_friends(user_id, friend_id, is_accepted) VALUES (?, ?, false)";
 
     private static final String DELETE_FRIEND_QUERY =
             "DELETE FROM user_friends WHERE user_id = ? AND friend_id = ?";
 
     private static final String IS_FRIEND_REQUEST =
-            "SELECT * FROM user_friends WHERE friend_id = ? AND user_id = ? AND is_accept = false";
+            "SELECT * FROM user_friends WHERE friend_id = ? AND user_id = ? AND is_accepted = false";
 
     private static final String IS_FRIEND =
-            "SELECT * FROM user_friends WHERE friend_id = ? AND user_id = ? AND is_accept = true";
+            "SELECT * FROM user_friends WHERE friend_id = ? AND user_id = ? AND is_accepted = true";
 
     private static final String ACCEPT_REQUEST =
-            "UPDATE user_friends SET is_accept = true WHERE user_id = ? AND friend_id = ?";
+            "UPDATE user_friends SET is_accepted = true WHERE user_id = ? AND friend_id = ?";
 
     private static final String REMOVE_REQUEST =
-            "UPDATE user_friends SET is_accept = false WHERE friend_id = ? AND user_id = ?";
+            "UPDATE user_friends SET is_accepted = false WHERE friend_id = ? AND user_id = ?";
 
     private static final String GET_FRIENDS_QUERY =
             """
-                    SELECT * FROM "users" WHERE "id" IN (
-                    SELECT "friend_id" FROM "user_friends"
-                    WHERE "user_id" = ?
+                    SELECT * FROM users WHERE id IN (
+                    SELECT friend_id FROM user_friends
+                    WHERE user_id = ?
                     UNION ALL
-                    SELECT "user_id" FROM "user_friends"
-                    WHERE "friend_id" = ? AND "is_accept" = true)
+                    SELECT user_id FROM user_friends
+                    WHERE friend_id = ? AND is_accepted = true)
                     """;
 
     private static final String GET_COMMON_FRIENDS =
             """
-                    SELECT * FROM "users" WHERE "id" IN (
+                    SELECT * FROM users WHERE id IN (
                     SELECT * FROM (
-                    SELECT "friend_id"  FROM "user_friends"
-                    WHERE "user_id" = ? OR "user_id" = ?
+                    SELECT friend_id  FROM user_friends
+                    WHERE user_id = ? OR user_id = ?
                     UNION ALL
-                    SELECT "user_id" FROM "user_friends"
-                    WHERE ("friend_id" = ? OR "friend_id" = ?) AND "is_accept" = true) as cf
-                    GROUP BY "friend_id"
+                    SELECT user_id FROM user_friends
+                    WHERE (friend_id = ? OR friend_id = ?) AND is_accepted = true) as cf
+                    GROUP BY friend_id
                     HAVING COUNT(*) > 1)
                     """;
 

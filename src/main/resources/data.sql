@@ -1,6 +1,6 @@
-SET SCHEMA "public";
+SET SCHEMA public;
 
-INSERT INTO "genres_names" ("name")
+INSERT INTO genres_names (name)
 VALUES
     ('Comedy'),
     ('Drama'),
@@ -9,7 +9,7 @@ VALUES
     ('Fantasy'),
     ('Documental');
 
-INSERT INTO "ratings" ("name")
+INSERT INTO ratings (name)
 VALUES
     ('G'),
     ('PG'),
