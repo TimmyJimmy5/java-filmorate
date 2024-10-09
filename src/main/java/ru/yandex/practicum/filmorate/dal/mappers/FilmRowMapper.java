@@ -18,8 +18,8 @@ import java.util.Set;
 @Component
 @RequiredArgsConstructor
 public class FilmRowMapper implements RowMapper<Film> {
-    GenreRepository genreRepository;
-    RatingRepository ratingRepository;
+    final GenreRepository genreRepository;
+    final RatingRepository ratingRepository;
 
     @Override
     public Film mapRow(ResultSet resultSet, int rowNum) throws SQLException {

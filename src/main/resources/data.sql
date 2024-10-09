@@ -2,12 +2,12 @@ SET SCHEMA public;
 
 INSERT INTO genres_names (name)
 VALUES
-    ('Comedy'),
-    ('Drama'),
-    ('Thriller'),
-    ('Science'),
-    ('Fantasy'),
-    ('Documental');
+    ('Комедия'),
+    ('Драма'),
+    ('Мультфильм'),
+    ('Триллер'),
+    ('Документальный'),
+    ('Боевик');
 
 INSERT INTO ratings (name)
 VALUES

@@ -32,7 +32,7 @@ public class UserRepository extends BaseRepository<User> {
             "SELECT * FROM user_friends WHERE friend_id = ? AND user_id = ? AND is_accepted = true";
 
     private static final String ACCEPT_REQUEST =
-            "UPDATE user_friends SET is_accepted = true WHERE user_id = ? AND friend_id = ?";
+            "UPDATE user_friends SET is_accepted = true WHERE friend_id = ? AND user_id = ?";
 
     private static final String REMOVE_REQUEST =
             "UPDATE user_friends SET is_accepted = false WHERE friend_id = ? AND user_id = ?";
@@ -105,7 +105,7 @@ public class UserRepository extends BaseRepository<User> {
     }
 
     public boolean deleteFriend(Object... params) {
-        return jdbc.update(DELETE_FRIEND_QUERY, params) > 1;
+        return jdbc.update(DELETE_FRIEND_QUERY, params) > 0;
     }
 
     public boolean isFriendRequest(Object... params) {
@@ -113,7 +113,7 @@ public class UserRepository extends BaseRepository<User> {
     }
 
     public boolean acceptRequest(Object... params) {
-        return jdbc.update(ACCEPT_REQUEST, params) > 1;
+        return jdbc.update(ACCEPT_REQUEST, params) > 0;
     }
 
     public boolean isFriend(Object... params) {
@@ -121,7 +121,7 @@ public class UserRepository extends BaseRepository<User> {
     }
 
     public boolean removeRequest(Object... params) {
-        return jdbc.update(REMOVE_REQUEST, params) > 1;
+        return jdbc.update(REMOVE_REQUEST, params) > 0;
     }
 
     public Set<User> getFriends(Long id) {

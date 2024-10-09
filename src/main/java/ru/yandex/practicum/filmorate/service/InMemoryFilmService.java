@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.dto.film.FilmRequest;
 import ru.yandex.practicum.filmorate.dto.director.DirectorRequest;
 import ru.yandex.practicum.filmorate.dto.genre.GenreRequest;
+import ru.yandex.practicum.filmorate.exception.BadInputException;
 import ru.yandex.practicum.filmorate.exception.BadInputExceptionParametered;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
@@ -138,7 +139,7 @@ public class InMemoryFilmService implements FilmService {
                 .map(GenreRequest::getId)
                 .map(genreRepository::findById)
                 .map(genre -> genre
-                        .orElseThrow(() -> new NotFoundException("Жанр не найден")))
+                        .orElseThrow(() -> new BadInputException("Жанр не найден")))
                 .peek(genre -> filmRepository.addGenreForFilm(film.getId(), genre.getId()))
                 .collect(Collectors.toSet());
         film.setGenres(genres);

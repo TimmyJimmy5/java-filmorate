@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.dto.film;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.annotations.MinFilmDate;
 import ru.yandex.practicum.filmorate.dto.director.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.genre.GenreDto;
 import ru.yandex.practicum.filmorate.dto.rating.RatingDto;
@@ -16,6 +17,7 @@ public class FilmDto {
     private Long id;
     private String name;
     private String description;
+    @MinFilmDate
     private LocalDate releaseDate;
     private Integer duration;
     private RatingDto mpa;
