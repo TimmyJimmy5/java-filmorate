@@ -3,14 +3,12 @@ package ru.yandex.practicum.filmorate.dal.mappers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dal.repository.DirectorRepository;
 import ru.yandex.practicum.filmorate.dal.repository.GenreRepository;
 import ru.yandex.practicum.filmorate.dal.repository.RatingRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Set;

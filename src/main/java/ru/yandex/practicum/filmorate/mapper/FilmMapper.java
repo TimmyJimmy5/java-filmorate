@@ -5,10 +5,10 @@ import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.dto.film.FilmRequest;
-import ru.yandex.practicum.filmorate.dto.director.DirectorDto;
+//import ru.yandex.practicum.filmorate.dto.director.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.genre.GenreDto;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Director;
+//import ru.yandex.practicum.filmorate.model.Director;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
