@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
+@Repository("filmRepository")
 public class FilmRepository extends BaseRepository<Film> {
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM films WHERE id = ?";
     private static final String FIND_ALL_QUERY = "SELECT * FROM films";

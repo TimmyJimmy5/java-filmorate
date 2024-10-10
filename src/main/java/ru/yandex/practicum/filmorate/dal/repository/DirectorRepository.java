@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-@Repository
+@Repository("directorRepository")
 public class DirectorRepository extends BaseRepository<Director> {
     private static final String INSERT_QUERY = "INSERT INTO directors(name) VALUES (?)";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM directors WHERE id = ?";

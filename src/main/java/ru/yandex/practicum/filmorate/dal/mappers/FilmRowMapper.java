@@ -13,7 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Set;
 
-@Component
+@Component("filmRowMapper")
 @RequiredArgsConstructor
 public class FilmRowMapper implements RowMapper<Film> {
     final GenreRepository genreRepository;
