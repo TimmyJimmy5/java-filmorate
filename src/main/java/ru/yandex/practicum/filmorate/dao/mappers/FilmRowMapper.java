@@ -1,10 +1,10 @@
-package ru.yandex.practicum.filmorate.dal.mappers;
+package ru.yandex.practicum.filmorate.dao.mappers;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dal.repository.GenreRepository;
-import ru.yandex.practicum.filmorate.dal.repository.RatingRepository;
+import ru.yandex.practicum.filmorate.dao.repository.GenreRepository;
+import ru.yandex.practicum.filmorate.dao.repository.RatingRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -33,7 +33,7 @@ public class FilmRowMapper implements RowMapper<Film> {
                 .orElseThrow(() -> new NotFoundException("Рейтинга с ID = " + ratingId + " не существует"));
         film.setMpa(mpa);
 
-        Set<Genre> genres = genreRepository.getForFilm(film.getId());
+        Set<Genre> genres = genreRepository.getByFilmId(film.getId());
         film.setGenres(genres);
         return film;
     }

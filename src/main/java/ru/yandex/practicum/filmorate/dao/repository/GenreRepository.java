@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.dal.repository;
+package ru.yandex.practicum.filmorate.dao.repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -38,7 +38,7 @@ public class GenreRepository extends BaseRepository<Genre> {
     }
 
 
-    public Set<Genre> getForFilm(Long id) {
+    public Set<Genre> getByFilmId(Long id) {
         return new HashSet<>(jdbc.query(FIND_GENRE_FOR_FILM, mapper, id));
     }
 }

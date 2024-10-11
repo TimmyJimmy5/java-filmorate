@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.dal.repository;
+package ru.yandex.practicum.filmorate.dao.repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -40,7 +40,7 @@ public class DirectorRepository extends BaseRepository<Director> {
         return delete(DELETE_QUERY, id);
     }
 
-    public Set<Director> getForFilm(Long id) {
+    public Set<Director> getByFilmId(Long id) {
         return new HashSet<>(jdbc.query(GET_DIRECTOR_FOR_FILM, mapper, id));
     }
 
