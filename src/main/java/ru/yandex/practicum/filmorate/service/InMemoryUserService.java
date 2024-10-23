@@ -103,4 +103,11 @@ public class InMemoryUserService implements UserService {
             }
         }
     }
+
+    @Override
+    public UserDto get(Long id) {
+        return userRepository.findById(id)
+                .map(UserMapper::mapToUserDto)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID = " + id + " не найден"));
+    }
 }
