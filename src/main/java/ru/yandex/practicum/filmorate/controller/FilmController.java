@@ -50,11 +50,11 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<FilmDto> getFilmsTop(@RequestParam(defaultValue = "10") int size) {
-        if (size < 1) {
-            throw new BadInputExceptionParametered("size", "Некорректный размер выборки. Размер должен быть больше нуля");
+    public List<FilmDto> getFilmsTop(@RequestParam(defaultValue = "10") int count) {
+        if (count < 1) {
+            throw new BadInputExceptionParametered("count", "Некорректный размер выборки. Размер должен быть больше нуля");
         }
-        return filmService.getTopFilms(size);
+        return filmService.getTopFilms(count);
     }
 
     @PutMapping("/{filmId}/like/{userId}")
