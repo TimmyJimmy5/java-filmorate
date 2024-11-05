@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.dto.user.UserDto;
 import ru.yandex.practicum.filmorate.dto.user.UserRequest;
 
@@ -16,6 +17,8 @@ public interface UserService {
 
     Set<UserDto> getCommonFriends(Long userId, Long otherId);
 
+    UserDto get(Long id);
+
     List<UserDto> getFriends(Long userId);
 
     Collection<UserDto> findAll();
@@ -24,5 +27,7 @@ public interface UserService {
 
     UserDto update(UserRequest userRequest);
 
-    UserDto get(Long id);
+    Collection<FilmDto> getRecommendations(Long userId);
+
+    void deleteUserById(Long userId);
 }

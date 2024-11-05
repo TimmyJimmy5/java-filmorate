@@ -3,28 +3,20 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.repository.DirectorRepository;
-import ru.yandex.practicum.filmorate.dao.repository.FilmRepository;
-import ru.yandex.practicum.filmorate.dao.repository.GenreRepository;
-import ru.yandex.practicum.filmorate.dao.repository.RatingRepository;
-import ru.yandex.practicum.filmorate.dao.repository.UserRepository;
+import ru.yandex.practicum.filmorate.dao.repository.*;
+import ru.yandex.practicum.filmorate.dto.director.DirectorRequest;
 import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.dto.film.FilmRequest;
-import ru.yandex.practicum.filmorate.dto.director.DirectorRequest;
 import ru.yandex.practicum.filmorate.dto.genre.GenreRequest;
 import ru.yandex.practicum.filmorate.exception.BadInputException;
 import ru.yandex.practicum.filmorate.exception.BadInputExceptionParametered;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Rating;
+import ru.yandex.practicum.filmorate.model.*;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -36,10 +28,18 @@ public class InMemoryFilmService implements FilmService {
     private final RatingRepository ratingRepository;
     private final GenreRepository genreRepository;
     private final DirectorRepository directorRepository;
+    private final EventService eventService;
 
     @Override
     public List<FilmDto> getTopFilms(int count) {
         return filmRepository.getTopFilms(count).stream()
+                .map(FilmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FilmDto> getTopFilmsByGenreYear(int count, long genreId, LocalDate date) {
+        return filmRepository.getTopFilmsByGenreYear(count, genreId, date).stream()
                 .map(FilmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
     }
@@ -55,9 +55,7 @@ public class InMemoryFilmService implements FilmService {
     public boolean putLike(Long id, Long userId) {
         checkFilmId(filmRepository, id);
         checkUserId(userRepository, userId);
-        if (filmRepository.findLike(id, userId)) {
-            return false;
-        }
+        eventService.addEvent(new Event(userId, EventType.LIKE, OperationType.ADD, id, Instant.now().toEpochMilli()));
         return filmRepository.putLike(id, userId);
     }
 
@@ -65,6 +63,7 @@ public class InMemoryFilmService implements FilmService {
     public boolean deleteLike(Long filmId, Long userId) {
         checkFilmId(filmRepository, filmId);
         checkUserId(userRepository, userId);
+        eventService.addEvent(new Event(userId, EventType.LIKE, OperationType.REMOVE, filmId, Instant.now().toEpochMilli()));
         return filmRepository.deleteLike(filmId, userId);
     }
 
@@ -87,6 +86,7 @@ public class InMemoryFilmService implements FilmService {
 
     @Override
     public boolean delete(Long id) {
+        checkFilmId(filmRepository, id);
         return filmRepository.delete(id);
     }
 
@@ -104,6 +104,18 @@ public class InMemoryFilmService implements FilmService {
         addDirector(updatedFilm, filmRequest);
         updatedFilm = filmRepository.update(updatedFilm);
         return FilmMapper.mapToFilmDto(updatedFilm);
+    }
+
+    @Override
+    public Collection<FilmDto> getCommonFilms(Long userId, Long friendId) {
+        Optional<User> optUser = userRepository.findById(userId);
+        Optional<User> optFriend = userRepository.findById(friendId);
+        if (optUser.isEmpty() || optFriend.isEmpty()) {
+            log.error("Пользователь с id {} или с id {} не добавлен", userId, friendId);
+            throw new NotFoundException(String.format("Пользователь с id {} или с id {} не добавлен", userId, friendId));
+        }
+        Collection<Film> commonFilms = filmRepository.getCommonFilms(userId, friendId);
+        return commonFilms.stream().map(FilmMapper::mapToFilmDto).collect(Collectors.toList());
     }
 
     public void checkFilmId(FilmRepository filmRepository, Long... ids) {
@@ -160,5 +172,61 @@ public class InMemoryFilmService implements FilmService {
                 .peek(director -> filmRepository.addDirectorForFilm(film.getId(), director.getId()))
                 .collect(Collectors.toSet());
         film.setDirectors(directors);
+    }
+
+    public void checkDirectorId(DirectorRepository directorRepository, Long... ids) {
+        for (Long id : ids) {
+            if (directorRepository.findById(id).isEmpty()) {
+                throw new NotFoundException("Директора с ID " + id + " не существует");
+            }
+        }
+    }
+
+    @Override
+    public List<FilmDto> getDirectorsFilmsByYear(Long id) {
+        checkDirectorId(directorRepository, id);
+        return filmRepository.getDirectorsFilmSortByYear(id).stream()
+                .map(FilmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FilmDto> getDirectorsFilmsByLikes(Long id) {
+        checkDirectorId(directorRepository, id);
+        return filmRepository.getDirectorsFilmSortByLikes(id).stream()
+                .map(FilmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FilmDto> searchByFilm(String query) {
+        return filmRepository.searchByFilm(query.toLowerCase()).stream()
+                .map(FilmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FilmDto> searchByDirector(String query) {
+        return filmRepository.searchByDirector(query.toLowerCase()).stream()
+                .map(FilmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FilmDto> searchFilms(String query, String by) {
+        List<FilmDto> results;
+
+        switch (by) {
+            case "title" -> results = searchByFilm(query);
+            case "director" -> results = searchByDirector(query);
+            case "title,director", "director,title" -> {
+                results = new ArrayList<>(searchByDirector(query));
+                results.addAll(searchByFilm(query));
+                return results.stream().distinct().collect(Collectors.toList());
+            }
+            default -> throw new BadInputException("Поиск должен быть по director или title");
+        }
+
+        return results;
     }
 }

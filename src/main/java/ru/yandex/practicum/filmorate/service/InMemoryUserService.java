@@ -3,18 +3,19 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.repository.FilmRepository;
 import ru.yandex.practicum.filmorate.dao.repository.UserRepository;
+import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.dto.user.UserDto;
 import ru.yandex.practicum.filmorate.dto.user.UserRequest;
 import ru.yandex.practicum.filmorate.exception.BadInputExceptionParametered;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.time.Instant;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -22,6 +23,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class InMemoryUserService implements UserService {
     private final UserRepository userRepository;
+    private final FilmRepository filmRepository;
+    private final EventService eventService;
 
     @Override
     public boolean addFriend(Long userId, Long friendId) {
@@ -33,6 +36,7 @@ public class InMemoryUserService implements UserService {
         if (userRepository.isFriendRequest(userId, friendId)) {
             return userRepository.acceptRequest(userId, friendId);
         }
+        eventService.addEvent(new Event(userId, EventType.FRIEND, OperationType.ADD, friendId, Instant.now().toEpochMilli()));
         return userRepository.addFriend(userId, friendId);
     }
 
@@ -46,6 +50,7 @@ public class InMemoryUserService implements UserService {
         if (userRepository.isFriend(userId, friendId)) {
             return userRepository.removeRequest(userId, friendId);
         }
+        eventService.addEvent(new Event(userId, EventType.FRIEND, OperationType.REMOVE, friendId, Instant.now().toEpochMilli()));
         return userRepository.deleteFriend(userId, friendId);
     }
 
@@ -85,6 +90,20 @@ public class InMemoryUserService implements UserService {
     }
 
     @Override
+    public void deleteUserById(Long userId) {
+        checkUserId(userRepository, userId);
+        userRepository.delete(userId);
+    }
+
+    @Override
+    public UserDto get(Long id) {
+        return userRepository.findById(id)
+                .map(UserMapper::mapToUserDto)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID = " + id + " не найден"));
+    }
+
+
+    @Override
     public UserDto update(UserRequest userRequest) {
         if (userRequest.getId() == null) {
             throw new BadInputExceptionParametered("ID", "Должен быть указан ID");
@@ -96,18 +115,49 @@ public class InMemoryUserService implements UserService {
         return UserMapper.mapToUserDto(updatedUser);
     }
 
+    @Override
+    public Collection<FilmDto> getRecommendations(Long userId) {
+        if (userRepository.findById(userId).isEmpty()) {
+            log.warn("Пользователь с ID {} не найден", userId);
+            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
+        }
+
+        Collection<Film> filmsLikedByUser = filmRepository.getLikedFilmsByUserId(userId);
+
+        User mostSimilarUser = null;
+        int maxSimilarity = 0;
+
+        Set<User> usersWithSameLikes = userRepository.getUsersLikedSameFilms(userId);
+
+        for (User otherUser : usersWithSameLikes) {
+            List<Film> filmsLikedByOtherUser = new ArrayList<>(filmRepository.getLikedFilmsByUserId(otherUser.getId()));
+
+            filmsLikedByOtherUser.removeAll(filmsLikedByUser);
+
+            int similarity = filmsLikedByOtherUser.size();
+            if (similarity > maxSimilarity) {
+                maxSimilarity = similarity;
+                mostSimilarUser = otherUser;
+            }
+        }
+
+        if (mostSimilarUser != null && maxSimilarity > 0) {
+            List<Film> recommendedFilms = new ArrayList<>(filmRepository.getLikedFilmsByUserId(mostSimilarUser.getId()));
+            recommendedFilms.removeAll(filmsLikedByUser);
+
+            return recommendedFilms.stream()
+                    .map(FilmMapper::mapToFilmDto)
+                    .collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
     public void checkUserId(UserRepository userRepository, Long... ids) {
         for (Long id : ids) {
             if (userRepository.findById(id).isEmpty()) {
                 throw new NotFoundException("Юзера с ID " + id + " не существует");
             }
         }
-    }
-
-    @Override
-    public UserDto get(Long id) {
-        return userRepository.findById(id)
-                .map(UserMapper::mapToUserDto)
-                .orElseThrow(() -> new NotFoundException("Пользователь с ID = " + id + " не найден"));
     }
 }

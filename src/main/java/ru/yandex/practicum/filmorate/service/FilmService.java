@@ -4,12 +4,15 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.dto.film.FilmRequest;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
 @Service
 public interface FilmService {
     List<FilmDto> getTopFilms(int count);
+
+    List<FilmDto> getTopFilmsByGenreYear(int count, long genreId, LocalDate date);
 
     FilmDto findFilmById(Long filmId);
 
@@ -24,4 +27,17 @@ public interface FilmService {
     FilmDto update(FilmRequest filmRequest);
 
     boolean delete(Long id);
+
+    List<FilmDto> getDirectorsFilmsByYear(Long id);
+
+    List<FilmDto> getDirectorsFilmsByLikes(Long id);
+
+    Collection<FilmDto> getCommonFilms(Long userId, Long friendId);
+
+    List<FilmDto> searchByFilm(String query);
+
+    List<FilmDto> searchByDirector(String query);
+
+    List<FilmDto> searchFilms(String query, String by);
+
 }
